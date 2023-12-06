@@ -1,0 +1,120 @@
+---
+title: "Problem Set 3"
+author: Juan Camilo Parada Sandoval
+date: 06/12/2023
+output: pdf_document
+---
+# Punto 1
+```{r}
+## initial setup
+rm(list=ls())
+require(pacman)
+p_load(tidyverse,rio,data.table)
+```
+
+## Punto 1.1 
+```{r}
+rutas <- list.files("input" , recursive=T , full.names=T)
+```
+Cargamos todas las bases de datos como una cadena de listas.
+
+## Punto 1.2
+```{r}
+rutas_resto <- str_subset(string = rutas , pattern = "Resto - Ca")
+```
+Filtramos y extraemos en una lista unicamente las bases que sean "Resto - Características generales".
+
+```{r}
+lista_resto <- import_list(file = rutas_resto)
+```
+Cargamos la lista ya filtrada y extraida.
+
+```{r}
+rutas_resto[1]
+str_sub(rutas_resto[35],start = 14 , 17)
+```
+Identificamos los caracteres en donde aparecen los meses y años.
+
+```{r}
+View(lista_resto[[1]])
+lista_resto[[1]]$path <- rutas_resto[1]
+```
+Creamos la ruta de identificacion de las bases de datos.
+
+```{r}
+for (i in 1:length(lista_resto)){
+     lista_resto[[i]]$path <- rutas_resto[i]  
+     lista_resto[[i]]$year <- str_sub(lista_resto[[i]]$path,start = 14 , 17)
+}
+View(lista_resto[[20]])
+```
+Organizamos los dataframes por mes y año mediante un bucle.
+
+## Punto 1.3
+
+```{r}
+lista_resto[[36]] <- NULL
+cg <- rbindlist(l=lista_resto , use.names=T , fill=T)
+```
+
+Eliminamos la 36va base de datos porque estaba mal especificada entre los archivos del enunciado.
+
+
+Cargamos la base de datos completa con los datos organizados por mes y año.
+
+```{r}
+export(cg,"output/db_full.rds")
+```
+Exportamos la base de datos ya creada.
+
+# Punto 2
+
+```{r}
+ggplot(data = cg,aes(x=ESC, y= P6040)) + geom_point() + 
+  labs(title = "Relacion entre edad y tiempo de escolaridad", 
+       x = "Tiempo de escolaridad",
+       y = "Edad") +
+  theme_minimal()
+```
+
+```{r}
+df <- cg %>%
+  filter(P3246 == 1) %>%
+  select(P6040, ESC)
+```
+Hacemos un ajuste para ver los datos de las personas que se consideran pobres.
+Posteriormente se hará lo mismo para aquellos que no se consideran pobres.
+
+```{r}
+ggplot(data = df,aes(x=ESC, y= P6040)) + geom_point() + 
+  labs(title = "Relacion entre edad y tiempo de escolaridad",
+       subtitle = "Datos para personas que se consideran pobres segun la GEIH",
+       x = "Tiempo de escolaridad",
+       y = "Edad") +
+  theme_minimal()
+```
+
+```{r}
+df2 <- cg %>%
+  filter(P3246 == 2) %>%
+  select(P6040, ESC)
+
+ggplot(data = df2,aes(x=ESC, y= P6040)) + geom_point() + 
+  labs(title = "Relacion entre edad y tiempo de escolaridad",
+       subtitle = "Datos para personas que no se consideran pobres segun la GEIH",
+       x = "Tiempo de escolaridad",
+       y = "Edad") +
+  theme_minimal()
+
+```
+
+
+
+
+
+
+
+
+
+
+
